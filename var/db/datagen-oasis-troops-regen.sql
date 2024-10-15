@@ -40,16 +40,16 @@ SET @noVillage = ((SELECT id FROM %PREFIX%oids LIMIT 1) = -1);
 SET @firstVillage = (SELECT id FROM %PREFIX%oids LIMIT 1);
 
 -- minimum and maximum number of units for oasis with "high" field set to 0
-SET @minUnitsForOasis0 = 15;
-SET @maxUnitsForOasis0 = 30;
+SET @minUnitsForOasis0 = 0;
+SET @maxUnitsForOasis0 = 0;
 
 -- minimum and maximum number of units for oasis with "high" field set to 1
-SET @minUnitsForOasis1 = 50;
-SET @maxUnitsForOasis1 = 70;
+SET @minUnitsForOasis1 = 1;
+SET @maxUnitsForOasis1 = 1;
 
 -- minimum and maximum number of units for oasis with "high" field set to 2
-SET @minUnitsForOasis2 = 90;
-SET @maxUnitsForOasis2 = 120;
+SET @minUnitsForOasis2 = 2;
+SET @maxUnitsForOasis2 = 2;
 
 
 
@@ -109,7 +109,7 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u.u35 = u.u35 + (FLOOR(5 + RAND() * 10)),
+        u.u35 = u.u35 + (FLOOR(0 + RAND() * 10)),
         u36 = u36 + (FLOOR(0 + RAND() * 5)),
         u37 = u37 + (FLOOR(0 + RAND() * 5))
     WHERE
@@ -121,7 +121,7 @@ UPDATE %PREFIX%units u
                         SELECT
                             id
                         FROM
-                            s1_wdata
+                            %PREFIX%wdata
                         WHERE
                             oasistype IN(1,2)
                 )
@@ -163,7 +163,7 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u35 = u35 + (FLOOR(5 + RAND() * 15)),
+        u35 = u35 + (FLOOR(0 + RAND() * 15)),
         u36 = u36 + (FLOOR(0 + RAND() * 5)),
         u37 = u37 + (FLOOR(0 + RAND() * 5)),
         u38 = u38 + (FLOOR(0 + RAND() * 5)),
@@ -177,7 +177,7 @@ UPDATE %PREFIX%units u
                         SELECT
                             id
                         FROM
-                            s1_wdata
+                            %PREFIX%wdata
                         WHERE
                             oasistype IN(3)
                 )
@@ -219,8 +219,8 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u31 = u31 + (FLOOR(10 + RAND() * 15)),
-        u32 = u32 + (FLOOR(5 + RAND() * 15)),
+        u31 = u31 + (FLOOR(0 + RAND() * 15)),
+        u32 = u32 + (FLOOR(0 + RAND() * 15)),
         u35 = u35 + (FLOOR(0 + RAND() * 10))
     WHERE
         (
@@ -231,7 +231,7 @@ UPDATE %PREFIX%units u
                         SELECT
                             id
                         FROM
-                            s1_wdata
+                            %PREFIX%wdata
                         WHERE
                             oasistype IN(4,5)
                 )
@@ -270,8 +270,8 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u31 = u31 + (FLOOR(15 + RAND() * 20)),
-        u32 = u32 + (FLOOR(10 + RAND() * 15)),
+        u31 = u31 + (FLOOR(0 + RAND() * 20)),
+        u32 = u32 + (FLOOR(0 + RAND() * 15)),
         u35 = u35 + (FLOOR(0 + RAND() * 10)),
         u40 = u40 + (FLOOR(0 + RAND() * 3))
     WHERE
@@ -283,7 +283,7 @@ UPDATE %PREFIX%units u
                         SELECT
                             id
                         FROM
-                            s1_wdata
+                            %PREFIX%wdata
                         WHERE
                             oasistype IN(6)
                 )
@@ -322,8 +322,8 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u31 = u31 + (FLOOR(10 + RAND() * 15)),
-        u32 = u32 + (FLOOR(5 + RAND() * 15)),
+        u31 = u31 + (FLOOR(0 + RAND() * 15)),
+        u32 = u32 + (FLOOR(0 + RAND() * 15)),
         u34 = u34 + (FLOOR(0 + RAND() * 10))
     WHERE
         (
@@ -334,7 +334,7 @@ UPDATE %PREFIX%units u
                         SELECT
                             id
                         FROM
-                            s1_wdata
+                            %PREFIX%wdata
                         WHERE
                             oasistype IN(7,8)
                 )
@@ -373,8 +373,8 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u31 = u31 + (FLOOR(15 + RAND() * 20)),
-        u32 = u32 + (FLOOR(10 + RAND() * 15)),
+        u31 = u31 + (FLOOR(0 + RAND() * 20)),
+        u32 = u32 + (FLOOR(0 + RAND() * 15)),
         u34 = u34 + (FLOOR(0 + RAND() * 10)),
         u39 = u39 + (FLOOR(0 + RAND() * 3))
     WHERE
@@ -386,7 +386,7 @@ UPDATE %PREFIX%units u
                         SELECT
                             id
                         FROM
-                            s1_wdata
+                            %PREFIX%wdata
                         WHERE
                             oasistype IN(9)
                 )
@@ -425,8 +425,8 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u31 = u31 + (FLOOR(5 + RAND() * 15)),
-        u33 = u33 + (FLOOR(5 + RAND() * 10)),
+        u31 = u31 + (FLOOR(0 + RAND() * 15)),
+        u33 = u33 + (FLOOR(0 + RAND() * 10)),
         u37 = u37 + (FLOOR(0 + RAND() * 10)),
         u38 = u38 + (FLOOR(0 + RAND() * 5)),
         u39 = u39 + (FLOOR(0 + RAND() * 5))
@@ -439,7 +439,7 @@ UPDATE %PREFIX%units u
                         SELECT
                             id
                         FROM
-                            s1_wdata
+                            %PREFIX%wdata
                         WHERE
                             oasistype IN(10,11)
                 )
@@ -485,8 +485,8 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u31 = u31 + (FLOOR(10 + RAND() * 15)),
-        u33 = u33 + (FLOOR(5 + RAND() * 10)),
+        u31 = u31 + (FLOOR(0 + RAND() * 15)),
+        u33 = u33 + (FLOOR(0 + RAND() * 10)),
         u37 = u37 + (FLOOR(0 + RAND() * 10)),
         u38 = u38 + (FLOOR(0 + RAND() * 5)),
         u39 = u39 + (FLOOR(0 + RAND() * 5)),
@@ -500,7 +500,7 @@ UPDATE %PREFIX%units u
                         SELECT
                             id
                         FROM
-                            s1_wdata
+                            %PREFIX%wdata
                         WHERE
                             oasistype IN(12)
                 )
