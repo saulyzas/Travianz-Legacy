@@ -141,7 +141,7 @@ class Automation {
                 else $value = 0;
                 
                 if($value > 0){
-                    $newloyalty = min(100, $loyalty['loyalty'] + $value * (time() - $loyalty['lastupdate2']) / 3600);
+                    $newloyalty = min(100, $loyalty['loyalty'] + $value * (time() - $loyalty['lastupdate2']) /(60*60));
                     $q = "UPDATE ".TB_PREFIX."vdata SET loyalty = $newloyalty, lastupdate2=".time()." WHERE wref = '".$loyalty['wref']."'";
                     $database->query($q);
                 }            
@@ -156,7 +156,7 @@ class Automation {
                 $value = $this->getTypeLevel(37, $loyalty['conqured']);   
                 
                 if($value > 0){
-                    $newloyalty = min(100, $loyalty['loyalty'] + $value * (time() - $loyalty['lastupdated']) / 3600);
+                    $newloyalty = min(100, $loyalty['loyalty'] + $value * (time() - $loyalty['lastupdated']) /(60*60));
                     $q = "UPDATE ".TB_PREFIX."odata SET loyalty = $newloyalty, lastupdated=".time()." WHERE wref = '".$loyalty['wref']."'";
                     $database->query($q);
                 }              
