@@ -8,7 +8,7 @@ $start_timer = $generator->pageLoadTimeStart();
 | Credits:     All the developers including the leaders:  |
 |              Advocaite & Dzoki & Donnchadh              |
 |                                                         |
-| Copyright:   TravianX Project All rights reserved       |
+| Copyright:   TravianZ Project All rights reserved       |
 \** --------------------------------------------------- **/
 
 ?><?php
@@ -48,13 +48,13 @@ div.c1 {text-align: center}
                     } ?> <a href="logout.php"><?php echo LOGOUT;?></a></p>
         <p>
             <a href="allianz.php?s=2"><?php echo FORUM;?></a>
-        </p>
+        </p><a href="dailygold.php"><b><font color='Gray'><?php echo Dailygold;?></font></b></a> 
         <p>
 		    <?php
         	// no PLUS needed for Support
         	    if ($_SESSION['id_user'] != 1) {
             ?>
-			<a href="plus.php?id=3"><!--<?php echo SERVER_NAME; ?>-->TravianZ <b><span class="plus_g">P</span><span class="plus_o">l</span><span class="plus_g">u</span><span class="plus_o">s</span></b></a>
+			<a href="plus.php?id=3"> <?php echo SERVER_NAME; ?> <b><span class="plus_g">P</span><span class="plus_o">l</span><span class="plus_g">u</span><span class="plus_o">s</span></b></a>
             <?php
         	    }
             	// no support for support :-D
@@ -126,7 +126,7 @@ div.c1 {text-align: center}
 echo round(($generator->pageLoadTimeEnd()-$start_timer)*1000);
 ?></b> ms
 
-<br /><?php echo SEVER_TIME;?> <span id="tp1" class="b"><?php echo date('H:i:s'); ?></span>
+<br /><?php echo SERVER_TIME;?> <span id="tp1" class="b"><?php echo date('H:i:s'); ?></span>
             </div>
         </div>
     </div>
