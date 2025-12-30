@@ -40,16 +40,16 @@ SET @noVillage = ((SELECT id FROM %PREFIX%oids LIMIT 1) = -1);
 SET @firstVillage = (SELECT id FROM %PREFIX%oids LIMIT 1);
 
 -- minimum and maximum number of units for oasis with "high" field set to 0
-SET @minUnitsForOasis0 = 0;
-SET @maxUnitsForOasis0 = 1;
+SET @minUnitsForOasis0 = 15;
+SET @maxUnitsForOasis0 = 30;
 
 -- minimum and maximum number of units for oasis with "high" field set to 1
-SET @minUnitsForOasis1 = 2;
-SET @maxUnitsForOasis1 = 3;
+SET @minUnitsForOasis1 = 70;
+SET @maxUnitsForOasis1 = 90;
 
 -- minimum and maximum number of units for oasis with "high" field set to 2
-SET @minUnitsForOasis2 = 4;
-SET @maxUnitsForOasis2 = 5;
+SET @minUnitsForOasis2 = 100;
+SET @maxUnitsForOasis2 = 120;
 
 
 
@@ -109,9 +109,10 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-         u35 = u35 + (FLOOR(1 + RAND() * 1)),
-        u36 = u36 + (FLOOR(0 + RAND() * 1)),
-        u37 = u37 + (FLOOR(0 + RAND() * 1))
+        u.u35 = u.u35 + IF(RAND() < 0.09, FLOOR(RAND() * 2), 0),
+          u36   = u36   + IF(RAND() < 0.06, FLOOR(RAND() * 2), 0),
+          u37   = u37   + IF(RAND() < 0.02, FLOOR(RAND() * 2), 0)
+
     WHERE
         (
             (
@@ -163,11 +164,11 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u35 = u35 + (FLOOR(1 + RAND() * 1)),
-        u36 = u36 + (FLOOR(0 + RAND() * 1)),
-        u37 = u37 + (FLOOR(0 + RAND() * 1)),
-        u38 = u38 + (FLOOR(0 + RAND() * 1)),
-        u40 = u40 + (FLOOR(0 + RAND() * 1))
+        u35 = u35 + IF(RAND() < 0.07, FLOOR(RAND() * 2), 0),
+        u36 = u36 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u37 = u37 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u38 = u38 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u40 = u40 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0)
     WHERE
         (
             (
@@ -191,14 +192,7 @@ UPDATE %PREFIX%units u
         )
         AND
         (
-            u35 <= (
-                CASE o.high
-                    WHEN 0 THEN (FLOOR(@minUnitsForOasis0 + RAND() * @maxUnitsForOasis0))
-                    WHEN 1 THEN (FLOOR(@minUnitsForOasis1 + RAND() * @maxUnitsForOasis1))
-                    WHEN 2 THEN (FLOOR(@minUnitsForOasis2 + RAND() * @maxUnitsForOasis2))
-                END
-            )
-            OR u36 <= (
+            u36 <= (
                 CASE o.high
                     WHEN 0 THEN (FLOOR(@minUnitsForOasis0 + RAND() * @maxUnitsForOasis0))
                     WHEN 1 THEN (FLOOR(@minUnitsForOasis1 + RAND() * @maxUnitsForOasis1))
@@ -212,6 +206,13 @@ UPDATE %PREFIX%units u
                     WHEN 2 THEN (FLOOR(@minUnitsForOasis2 + RAND() * @maxUnitsForOasis2))
                 END
             )
+            OR u38 <= (
+                CASE o.high
+                    WHEN 0 THEN (FLOOR(@minUnitsForOasis0 + RAND() * @maxUnitsForOasis0))
+                    WHEN 1 THEN (FLOOR(@minUnitsForOasis1 + RAND() * @maxUnitsForOasis1))
+                    WHEN 2 THEN (FLOOR(@minUnitsForOasis2 + RAND() * @maxUnitsForOasis2))
+                END
+            )
         );
 
 -- +25% clay oasis
@@ -219,9 +220,9 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u31 = u31 + (FLOOR(1 + RAND() * 1)),
-        u32 = u32 + (FLOOR(1 + RAND() * 1)),
-        u35 = u35 + (FLOOR(0 + RAND() * 1))
+        u31 = u31 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u32 = u32 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u35 = u35 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0)
     WHERE
         (
             (
@@ -270,10 +271,10 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u31 = u31 + (FLOOR(1 + RAND() * 1)),
-        u32 = u32 + (FLOOR(1 + RAND() * 1)),
-        u35 = u35 + (FLOOR(0 + RAND() * 1)),
-        u40 = u40 + (FLOOR(0 + RAND() * 1))
+        u31 = u31 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u32 = u32 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u35 = u35 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u40 = u40 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0)
     WHERE
         (
             (
@@ -322,9 +323,9 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u31 = u31 + (FLOOR(1 + RAND() * 1)),
-        u32 = u32 + (FLOOR(1 + RAND() * 1)),
-        u34 = u34 + (FLOOR(0 + RAND() * 1))
+        u31 = u31 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u32 = u32 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u34 = u34 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0)
     WHERE
         (
             (
@@ -373,10 +374,10 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u31 = u31 + (FLOOR(1 + RAND() * 1)),
-        u32 = u32 + (FLOOR(1 + RAND() * 1)),
-        u34 = u34 + (FLOOR(0 + RAND() * 1)),
-        u39 = u39 + (FLOOR(0 + RAND() * 1))
+        u31 = u31 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u32 = u32 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u34 = u34 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u39 = u39 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0)
     WHERE
         (
             (
@@ -425,11 +426,11 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u31 = u31 + (FLOOR(1 + RAND() * 1)),
-        u33 = u33 + (FLOOR(1 + RAND() * 1)),
-        u37 = u37 + (FLOOR(0 + RAND() * 1)),
-        u38 = u38 + (FLOOR(0 + RAND() * 1)),
-        u39 = u39 + (FLOOR(0 + RAND() * 1))
+        u31 = u31 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u33 = u33 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u37 = u37 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u38 = u38 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u39 = u39 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0)
     WHERE
         (
             (
@@ -485,12 +486,12 @@ UPDATE %PREFIX%units u
     JOIN %PREFIX%odata o
     ON u.vref = o.wref
     SET
-        u31 = u31 + (FLOOR(1 + RAND() * 1)),
-        u33 = u33 + (FLOOR(1 + RAND() * 1)),
-        u37 = u37 + (FLOOR(0 + RAND() * 1)),
-        u38 = u38 + (FLOOR(0 + RAND() * 1)),
-        u39 = u39 + (FLOOR(0 + RAND() * 1)),
-        u40 = u40 + (FLOOR(0 + RAND() * 1))
+        u31 = u31 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u33 = u33 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u37 = u37 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u38 = u38 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u39 = u39 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0),
+        u40 = u40 + IF(RAND() < 0.05, FLOOR(RAND() * 2), 0)
     WHERE
         (
             (
