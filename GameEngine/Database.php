@@ -1356,6 +1356,7 @@ class MYSQLi_DB implements IDbConnection {
     }
 
 	function setFieldTaken($id) {
+        if(empty($id)) return;
         if (!is_array($id)) {
             $id = [$id];
         }
@@ -3016,6 +3017,8 @@ class MYSQLi_DB implements IDbConnection {
 
 	function setAlliName($aid, $name, $tag) {
 	    list($aid, $name, $tag) = $this->escape_input((int) $aid, $name, $tag);
+        $name = $this->RemoveXSS($name);
+        $tag = $this->RemoveXSS($tag);
 
 		$q = "UPDATE " . TB_PREFIX . "alidata set name = '$name', tag = '$tag' where id = $aid";
 		return mysqli_query($this->dblink,$q);
@@ -3109,6 +3112,8 @@ class MYSQLi_DB implements IDbConnection {
 	*****************************************/
 	function createAlliance($tag, $name, $uid, $max) {
 	    list($tag, $name, $uid, $max) = $this->escape_input($tag, $name, (int) $uid, (int) $max);
+        $tag = $this->RemoveXSS($tag);
+        $name = $this->RemoveXSS($name);
 
 	    $q = "INSERT into " . TB_PREFIX . "alidata values (0,'$name','$tag',$uid,0,0,0,'','',$max,0,0,0,0,0,0,0,0,0)";
 		mysqli_query($this->dblink,$q);
@@ -5655,6 +5660,8 @@ References: User ID/Message ID, Mode
             list($moveid) = $this->escape_input($moveid);
         }
 
+        if(empty($moveid)) return;
+
         // rather than re-selecting data and updating cache here, let's just
         // flush the cache and let it re-cach itself as neccessary
         self::$marketMovementCache = [];
@@ -6012,6 +6019,7 @@ References: User ID/Message ID, Mode
 	function addUnits($vid, $troopsArray = null) {
 	    list($vid, $type, $values) = $this->escape_input($vid, $type, $values);
 	    
+        if(empty($vid)) return;
 	    if (!is_array($vid)) $vid = [$vid];
 	    $types = $values = "";
 	    
@@ -6201,6 +6209,7 @@ References: User ID/Message ID, Mode
 	}
 
 	function addTech($vid) {
+        if(empty($vid)) return;
         if (!is_array($vid)) {
             $vid = [$vid];
         }
@@ -6214,6 +6223,7 @@ References: User ID/Message ID, Mode
 	}
 
 	function addABTech($vid) {
+        if(empty($vid)) return;
         if (!is_array($vid)) {
             $vid = [$vid];
         }
@@ -7056,9 +7066,13 @@ References: User ID/Message ID, Mode
         try {
             // check that we don't have the structure in place already
             // (we'd have at least 1 user present, since 4 are being created by default - Support, Nature, Multihunter & Taskmaster)
-            $data_exist = $this->query_return("SELECT * FROM " . TB_PREFIX . "users LIMIT 1");
-            if ($data_exist && count($data_exist)) {
-                return false;
+            try {
+                $data_exist = $this->query_return("SELECT * FROM " . TB_PREFIX . "users LIMIT 1");
+                if ($data_exist && count($data_exist)) {
+                    return false;
+                }
+            } catch (\Exception $e) {
+
             }
 
             // load the DB structure SQL file
@@ -7073,6 +7087,7 @@ References: User ID/Message ID, Mode
                 return false;
             }
         } catch (\Exception $e) {
+            echo($e);
             return -1;
         }
 
@@ -7164,16 +7179,22 @@ References: User ID/Message ID, Mode
 			}
 		}
 
-		$q = "SELECT (u10+u20+u30) as sumsettlers FROM " . TB_PREFIX . "enforcement WHERE `from` = ".(int) $village->wid;
+		$q = "SELECT (u10+u20+u30) FROM " . TB_PREFIX . "enforcement WHERE `from` = ".(int) $village->wid;
 		$result = mysqli_query($this->dblink,$q);
-		while($settlersrow = mysqli_fetch_array($result)) {
-		    $settlers += $settlersrow["sumsettlers"];
+		$row = mysqli_fetch_row($result);
+		if(!empty($row)) {
+			foreach($row as $reinf) {
+				$settlers += $reinf[0];
+			}
 		}
 
-		$q = "SELECT (u9+u19+u29) as sumchiefs FROM " . TB_PREFIX . "enforcement WHERE `from` = ".(int) $village->wid;
+		$q = "SELECT (u9+u19+u29) FROM " . TB_PREFIX . "enforcement WHERE `from` = ".(int) $village->wid;
 		$result = mysqli_query($this->dblink,$q);
-		while($chiefsrow = mysqli_fetch_array($result)) {
-		    $chiefs += $chiefsrow["sumchiefs"];
+		$row = mysqli_fetch_row($result);
+		if(!empty($row)) {
+			foreach($row as $reinf) {
+				$chiefs += $reinf[0];
+			}
 		}
 
 		$trainlist = $technology->getTrainingList(4);
@@ -8068,145 +8089,149 @@ References: User ID/Message ID, Mode
         return mysqli_query($this->dblink,$q);
     }
 
-    function getPrisoners($wid, $mode = 0, $use_cache = true) {
-        $array_passed = is_array($wid);
-        $mode = (int) $mode;
+   function getPrisoners($wid, $mode = 0, $use_cache = true) {
+    $array_passed = is_array($wid);
+    $mode = (int)$mode;
 
-        if (!$array_passed) {
-            $wid = [(int) $wid];
-        } else {
-            foreach ($wid as $index => $widValue) {
-                $wid[$index] = (int) $widValue;
-            }
+    // Normalize input
+    if (!$array_passed) {
+        $wid = [(int)$wid];
+    } else {
+        foreach ($wid as $index => $widValue) {
+            $wid[$index] = (int)$widValue;
         }
-
-        if (!count($wid)) {
-            return [];
-        }
-
-        // first of all, check if we should be using cache and whether the field
-        // required is already cached
-        if ($use_cache && !$array_passed && isset(self::$prisonersCache[$wid[0].$mode]) && is_array(self::$prisonersCache[$wid[0].$mode]) && !count(self::$prisonersCache[$wid[0].$mode])) {
-            return self::$prisonersCache[$wid[0].$mode];
-        } else if ($use_cache && $array_passed) {
-            // check what we can return from cache
-            $newWIDs = [];
-            foreach ($wid as $key) {
-                if (!isset(self::$prisonersCache[$key.$mode])) {
-                    $newWIDs [] = $key;
-                }
-            }
-
-            // everything's cached, just return the cache
-            if (!count($newWIDs)) {
-                return self::$prisonersCache;
-            } else {
-                // update remaining IDs to select and cache
-                $wid = $newWIDs;
-            }
-        } else if ($use_cache && !$array_passed && ($cachedValue = self::returnCachedContent(self::$prisonersCache, $wid[0].$mode)) && !is_null($cachedValue)) {
-            // special case when we have empty arrays cached for this cache only
-            return $cachedValue;
-        }
-
-        if(!$mode) {
-            $q = "SELECT * FROM " . TB_PREFIX . "prisoners where wref IN(".implode(', ', $wid).")";
-        }else {
-            $q = "SELECT * FROM " . TB_PREFIX . "prisoners where `from` IN(".implode(', ', $wid).")";
-        }
-        $result = $this->mysqli_fetch_all(mysqli_query($this->dblink,$q));
-
-        // return a single value
-        if (!$array_passed) {
-            if (count($result) == 1) {
-                $result = $result[0];
-            }
-            self::$prisonersCache[$wid[0].$mode] = (count($result) ? [$result] : []);
-        } else {
-            if ($result && count($result)) {
-                if (!isset(self::$prisonersCache[$record[($mode ? 'from' : 'wref')].$mode])) {
-                    self::$prisonersCache[$record[($mode ? 'from' : 'wref' )].$mode] = [];
-                }
-
-                foreach ($result as $record) {
-                    self::$prisonersCache[$record[($mode ? 'from' : 'wref')].$mode][] = $record;
-                }
-            }
-
-            // check for any missing IDs and fill them in with blanks,
-            // since no reinforcements were found for these villages
-            foreach ($wid as $key) {
-                if (!isset(self::$prisonersCache[$key.$mode])) {
-                    self::$prisonersCache[$key.$mode] = [];
-                }
-            }
-        }
-
-        return ($array_passed ? self::$prisonersCache : self::$prisonersCache[$wid[0].$mode]);
     }
 
-	function getPrisoners2($wid,$from, $use_cache = true) {
-	    list($wid,$from) = $this->escape_input((int) $wid,(int) $from);
+    if (!count($wid)) {
+        return [];
+    }
 
-        // first of all, check if we should be using cache and whether the field
-        // required is already cached
-        if ($use_cache && ($cachedValue = self::returnCachedContent(self::$prisonersCacheByVillageAndFromIDs, $wid.$from)) && !is_null($cachedValue)) {
-            return $cachedValue;
+    // CACHE CHECK
+    if ($use_cache && !$array_passed) {
+        $cacheKey = $wid[0] . $mode;
+        if (isset(self::$prisonersCache[$cacheKey]) && is_array(self::$prisonersCache[$cacheKey])) {
+            return self::$prisonersCache[$cacheKey];
+        }
+    }
+
+    if ($use_cache && $array_passed) {
+        $newWIDs = [];
+        foreach ($wid as $key) {
+            if (!isset(self::$prisonersCache[$key . $mode])) {
+                $newWIDs[] = $key;
+            }
         }
 
-		$q = "SELECT * FROM " . TB_PREFIX . "prisoners where wref = $wid and " . TB_PREFIX . "prisoners.from = $from";
-		$result = mysqli_query($this->dblink,$q);
-
-        self::$prisonersCacheByVillageAndFromIDs[$wid.$from] = $this->mysqli_fetch_all($result);
-        return self::$prisonersCacheByVillageAndFromIDs[$wid.$from];
-	}
-
-	function getPrisonersByID($id, $use_cache = true) {
-	    list($id) = $this->escape_input((int) $id);
-
-        // first of all, check if we should be using cache and whether the field
-        // required is already cached
-        if ($use_cache && ($cachedValue = self::returnCachedContent(self::$prisonersCacheByID, $id)) && !is_null($cachedValue)) {
-            return $cachedValue;
+        if (!count($newWIDs)) {
+            return self::$prisonersCache;
         }
 
-		$q = "SELECT * FROM " . TB_PREFIX . "prisoners where id = $id LIMIT 1";
-		$result = mysqli_query($this->dblink,$q);
+        $wid = $newWIDs;
+    }
 
-        self::$prisonersCacheByID[$id] = mysqli_fetch_array($result);
-        return self::$prisonersCacheByID[$id];
-	}
+    // SQL QUERY
+    if (!$mode) {
+        $q = "SELECT * FROM " . TB_PREFIX . "prisoners WHERE wref IN(" . implode(', ', $wid) . ")";
+    } else {
+        $q = "SELECT * FROM " . TB_PREFIX . "prisoners WHERE `from` IN(" . implode(', ', $wid) . ")";
+    }
 
-	function getPrisoners3($from, $use_cache = true) {
-	    list($from) = $this->escape_input((int) $from);
-	    
-	    // first of all, check if we should be using cache and whether the field
-	    // required is already cached
-	    if ($use_cache && ($cachedValue = self::returnCachedContent(self::$prisonersCacheByVillageAndFromIDs, $from)) && !is_null($cachedValue)) {
-	        return $cachedValue;
-	    }
-	    
-	    $q = "SELECT * FROM " . TB_PREFIX . "prisoners where " . TB_PREFIX . "prisoners.from = $from";
-	    $result = mysqli_query($this->dblink,$q);
-	    
-	    self::$prisonersCacheByVillageAndFromIDs[$wid.$from] = $this->mysqli_fetch_all($result);
-	    return self::$prisonersCacheByVillageAndFromIDs[$from];
-	}
+    $result = mysqli_query($this->dblink, $q);
+    $result = $this->mysqli_fetch_all($result);
 
-	function deletePrisoners($id) {
-        if (!is_array($id)) {
-            $id = [$id];
+    // SINGLE ID
+    if (!$array_passed) {
+        $cacheKey = $wid[0] . $mode;
+        self::$prisonersCache[$cacheKey] = (count($result) ? $result : []);
+        return self::$prisonersCache[$cacheKey];
+    }
+
+    // MULTIPLE IDS
+    if ($result && count($result)) {
+        foreach ($result as $record) {
+            $keyField = ($mode ? 'from' : 'wref');
+            $key = $record[$keyField] . $mode;
+
+            if (!isset(self::$prisonersCache[$key])) {
+                self::$prisonersCache[$key] = [];
+            }
+
+            self::$prisonersCache[$key][] = $record;
         }
+    }
 
-        foreach ($id as $index => $idValue) {
-            $id[$index] = (int) $idValue;
+    // Ensure all requested IDs exist in cache
+    foreach ($wid as $key) {
+        $cacheKey = $key . $mode;
+        if (!isset(self::$prisonersCache[$cacheKey])) {
+            self::$prisonersCache[$cacheKey] = [];
         }
+    }
 
-		$q = "DELETE FROM " . TB_PREFIX . "prisoners WHERE id IN(".implode(', ', $id).")";
-		mysqli_query($this->dblink,$q);
+    return self::$prisonersCache;
+}
 
-		self::$prisonersCache = [];
-	}
+function getPrisoners2($wid, $from, $use_cache = true) {
+    list($wid, $from) = $this->escape_input((int)$wid, (int)$from);
+    $cacheKey = $wid . "_" . $from;
+
+    if ($use_cache && ($cachedValue = self::returnCachedContent(self::$prisonersCacheByVillageAndFromIDs, $cacheKey)) !== null) {
+        return $cachedValue;
+    }
+
+    $q = "SELECT * FROM " . TB_PREFIX . "prisoners WHERE wref = $wid AND `from` = $from";
+    $result = mysqli_query($this->dblink, $q);
+
+    self::$prisonersCacheByVillageAndFromIDs[$cacheKey] = $this->mysqli_fetch_all($result);
+    return self::$prisonersCacheByVillageAndFromIDs[$cacheKey];
+}
+
+function getPrisonersByID($id, $use_cache = true) {
+    list($id) = $this->escape_input((int)$id);
+
+    if ($use_cache && ($cachedValue = self::returnCachedContent(self::$prisonersCacheByID, $id)) !== null) {
+        return $cachedValue;
+    }
+
+    $q = "SELECT * FROM " . TB_PREFIX . "prisoners WHERE id = $id LIMIT 1";
+    $result = mysqli_query($this->dblink, $q);
+
+    self::$prisonersCacheByID[$id] = mysqli_fetch_array($result);
+    return self::$prisonersCacheByID[$id];
+}
+
+function getPrisoners3($from, $use_cache = true) {
+    list($from) = $this->escape_input((int)$from);
+
+    if ($use_cache && ($cachedValue = self::returnCachedContent(self::$prisonersCacheByVillageAndFromIDs, $from)) !== null) {
+        return $cachedValue;
+    }
+
+    $q = "SELECT * FROM " . TB_PREFIX . "prisoners WHERE `from` = $from";
+    $result = mysqli_query($this->dblink, $q);
+
+    self::$prisonersCacheByVillageAndFromIDs[$from] = $this->mysqli_fetch_all($result);
+    return self::$prisonersCacheByVillageAndFromIDs[$from];
+}
+
+function deletePrisoners($id) {
+    if (!is_array($id)) {
+        $id = [$id];
+    }
+
+    foreach ($id as $index => $idValue) {
+        $id[$index] = (int)$idValue;
+    }
+
+    $q = "DELETE FROM " . TB_PREFIX . "prisoners WHERE id IN(" . implode(', ', $id) . ")";
+    mysqli_query($this->dblink, $q);
+
+    // clear all related caches
+    self::$prisonersCache = [];
+    self::$prisonersCacheByID = [];
+    self::$prisonersCacheByVillageAndFromIDs = [];
+}
+
 
     /*****************************************
     Function to vacation mode - by advocaite
